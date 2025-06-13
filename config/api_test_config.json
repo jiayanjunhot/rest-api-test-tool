@@ -1,0 +1,20 @@
+{
+    "test_cases": [
+        {
+            "name": "get_user_info",
+            "method": "GET",
+            "endpoint": "/api/users/1",
+            "request_file": null,
+            "response_file": "responses/user_info_response.json",
+            "expected_file": "expected/user_info.json"
+        },
+        {
+            "name": "create_user",
+            "method": "POST",
+            "endpoint": "/api/users",
+            "request_file": "requests/create_user.json",
+            "response_file": "responses/create_user_response.json",
+            "expected_file": "expected/create_user.json"
+        }
+    ]
+} 
