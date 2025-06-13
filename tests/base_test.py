@@ -1,10 +1,12 @@
 import json
 import os
+import unittest
+
 import requests
 from config.config import BASE_URL, get_headers
 
-class BaseAPITest:
-    def __init__(self):
+class BaseAPITest(unittest.TestCase):
+    def setUp(self):
         self.base_url = BASE_URL
         self.headers = get_headers()
         # 获取项目根目录

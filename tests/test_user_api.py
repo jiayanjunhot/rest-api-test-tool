@@ -1,11 +1,12 @@
-import pytest
 import json
 import os
+
 from tests.base_test import BaseAPITest
 
+
 class TestUserAPI(BaseAPITest):
-    def __init__(self):
-        super().__init__()
+    def setUp(self):
+        super().setUp()
         # 加载测试配置
         config_path = os.path.join(self.project_root, 'config', 'api_test_config.json')
         with open(config_path, 'r', encoding='utf-8') as f:
@@ -51,4 +52,4 @@ class TestUserAPI(BaseAPITest):
     def test_upload_file(self):
         """测试文件上传"""
         test_case = next(tc for tc in self.test_config['test_cases'] if tc['name'] == 'upload_file')
-        self.run_test_case(test_case) 
+        self.run_test_case(test_case)
