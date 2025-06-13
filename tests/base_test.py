@@ -4,6 +4,7 @@ import unittest
 
 import requests
 from config.config import BASE_URL, get_headers
+from json.requests.form_data import FormDataHandler
 
 
 class BaseAPITest(unittest.TestCase):
@@ -12,6 +13,16 @@ class BaseAPITest(unittest.TestCase):
         self.headers = get_headers()
         # 获取项目根目录
         self.project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # 初始化FormDataHandler
+        self.form_data_handler = FormDataHandler(self.project_root)
+
+    def get_request_headers(self, is_form_data=False):
+        """获取请求头"""
+        headers = self.headers.copy()
+        if is_form_data:
+            # 对于form-data请求，移除Content-Type，让requests自动处理
+            headers.pop('Content-Type', None)
+        return headers
 
     @staticmethod
     def load_json_file(filename):
@@ -70,52 +81,25 @@ class BaseAPITest(unittest.TestCase):
         expected = self.load_json_file(expected_file)
         return expected == actual
 
-    def prepare_form_data(self, test_case):
-        """准备form-data请求数据"""
-        if not test_case.get('is_form_data'):
-            return None
-
-        # 加载请求参数
-        request_data = self.load_json_file(test_case['request_file'])
-        params = request_data.get('params', {})
-
-        # 准备文件
-        file_path = os.path.join(self.project_root, test_case['file_path'])
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"File not found: {file_path}")
-
-        # 创建multipart/form-data
-        files = {
-            'file': (
-                params.get('fileName', os.path.basename(file_path)),
-                open(file_path, 'rb'),
-                params.get('fileType', 'application/octet-stream')
-            )
-        }
-
-        # 添加其他参数
-        data = {
-            'description': params.get('description', ''),
-            'category': params.get('category', ''),
-            'fileName': params.get('fileName', ''),
-            'fileType': params.get('fileType', '')
-        }
-
-        return {'files': files, 'data': data}
-
     def make_request(self, method, endpoint, data=None, is_form_data=False):
         """发送HTTP请求并验证响应"""
         url = f"{self.base_url}{endpoint}"
 
+        # 获取适当的请求头
+        headers = self.get_request_headers(is_form_data)
+
         if is_form_data:
             # 处理form-data请求
-            form_data = self.prepare_form_data(data)
+            files, form_data = self.form_data_handler.prepare_form_data(
+                config_file=data['request_file'],
+                file_path=data['file_path']
+            )
             response = requests.request(
                 method=method,
                 url=url,
-                headers=self.headers,
-                files=form_data['files'],
-                data=form_data['data'],
+                headers=headers,
+                files=files,
+                data=form_data,
                 verify=False
             )
         else:
@@ -123,7 +107,7 @@ class BaseAPITest(unittest.TestCase):
             response = requests.request(
                 method=method,
                 url=url,
-                headers=self.headers,
+                headers=headers,
                 json=data,
                 verify=False
             )
