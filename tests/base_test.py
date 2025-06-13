@@ -56,16 +56,61 @@ class BaseAPITest:
         actual = response_json['data']
         return expected == actual
 
-    def make_request(self, method, endpoint, data=None, expected_status=200):
+    def prepare_form_data(self, test_case):
+        """准备form-data请求数据"""
+        if not test_case.get('is_form_data'):
+            return None
+
+        # 加载请求参数
+        request_data = self.load_json_file(test_case['request_file'])
+        params = request_data.get('params', {})
+
+        # 准备文件
+        file_path = os.path.join(self.project_root, test_case['file_path'])
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        # 创建multipart/form-data
+        files = {
+            'file': (
+                params.get('fileName', os.path.basename(file_path)),
+                open(file_path, 'rb'),
+                params.get('fileType', 'application/octet-stream')
+            )
+        }
+
+        # 添加其他参数
+        data = {
+            'description': params.get('description', ''),
+            'category': params.get('category', ''),
+            'fileName': params.get('fileName', ''),
+            'fileType': params.get('fileType', '')
+        }
+
+        return {'files': files, 'data': data}
+
+    def make_request(self, method, endpoint, data=None, expected_status=200, is_form_data=False):
         """发送HTTP请求并验证响应"""
         url = f"{self.base_url}{endpoint}"
         
-        response = requests.request(
-            method=method,
-            url=url,
-            headers=self.headers,
-            json=data
-        )
+        if is_form_data:
+            # 处理form-data请求
+            form_data = self.prepare_form_data(data)
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=self.headers,
+                files=form_data['files'],
+                data=form_data['data']
+            )
+        else:
+            # 处理普通JSON请求
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=self.headers,
+                json=data
+            )
         
         # 验证响应状态码
         assert response.status_code == expected_status, \

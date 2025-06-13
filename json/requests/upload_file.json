@@ -1,0 +1,8 @@
+{
+    "params": {
+        "fileName": "test_file.txt",
+        "fileType": "text/plain",
+        "description": "Test file upload",
+        "category": "test"
+    }
+} 

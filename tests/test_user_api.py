@@ -22,7 +22,8 @@ class TestUserAPI(BaseAPITest):
         response = self.make_request(
             method=test_case['method'],
             endpoint=test_case['endpoint'],
-            data=request_data
+            data=test_case if test_case.get('is_form_data') else request_data,
+            is_form_data=test_case.get('is_form_data', False)
         )
 
         # 保存响应
@@ -45,4 +46,9 @@ class TestUserAPI(BaseAPITest):
     def test_create_user(self):
         """测试创建用户"""
         test_case = next(tc for tc in self.test_config['test_cases'] if tc['name'] == 'create_user')
+        self.run_test_case(test_case)
+
+    def test_upload_file(self):
+        """测试文件上传"""
+        test_case = next(tc for tc in self.test_config['test_cases'] if tc['name'] == 'upload_file')
         self.run_test_case(test_case) 

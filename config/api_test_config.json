@@ -15,6 +15,16 @@
             "request_file": "requests/create_user.json",
             "response_file": "responses/create_user_response.json",
             "expected_file": "expected/create_user.json"
+        },
+        {
+            "name": "upload_file",
+            "method": "POST",
+            "endpoint": "/api/upload",
+            "request_file": "requests/upload_file.json",
+            "response_file": "responses/upload_response.json",
+            "expected_file": "expected/upload_expected.json",
+            "is_form_data": true,
+            "file_path": "files/test_file.txt"
         }
     ]
 } 
