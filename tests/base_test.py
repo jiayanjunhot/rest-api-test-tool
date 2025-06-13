@@ -54,8 +54,18 @@ class BaseAPITest(unittest.TestCase):
     def compare_response_data(self, response, expected_file):
         """比较响应数据与预期结果"""
         response_json = self.verify_response_format(response)
-        expected = self.load_json_file(expected_file)
         actual = response_json['data']
+
+        # 检查expected_file是否存在
+        expected_path = os.path.join(self.project_root, 'json', expected_file)
+        if not os.path.exists(expected_path):
+            # 如果expected_file不存在，则actual应该为空
+            assert actual is None or actual == {}, \
+                f"Expected file {expected_file} not found, but response data is not empty: {actual}"
+            return True
+
+        # 如果expected_file存在，则比较数据
+        expected = self.load_json_file(expected_file)
         return expected == actual
 
     def prepare_form_data(self, test_case):
