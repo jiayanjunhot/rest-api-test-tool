@@ -30,6 +30,12 @@ class TestUserAPI(BaseAPITest):
         # 保存响应
         self.save_response_json(response, test_case['response_file'])
 
+        # 验证响应状态码
+        assert response.status_code == 200, f"got status code  {response.status_code}"
+
+        # 验证响应格式
+        self.verify_response_format(response)
+
         # 比较响应数据
         assert self.compare_response_data(response, test_case['expected_file'])
 
